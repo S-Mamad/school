@@ -3,7 +3,13 @@ declare(strict_types=1);
 const APP_VERSION='2.0.0';
 const SCHEMA_VERSION=4;
 function json_response(array $data,int $status=200): never {http_response_code($status);header('Content-Type: application/json; charset=utf-8');echo json_encode($data,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);exit;}
-function is_https(): bool {return (!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off');}
+function is_https(): bool {
+ if(!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off')return true;
+ // Optional operator flag when TLS terminates at a reverse proxy (do not trust client headers).
+ $file=__DIR__.'/config.php';
+ if(is_file($file)){$c=@include $file;if(is_array($c)&&!empty($c['https']))return true;}
+ return false;
+}
 function local_request(): bool {return in_array($_SERVER['REMOTE_ADDR']??'',['127.0.0.1','::1'],true);}
 header('X-Content-Type-Options: nosniff');header('X-Frame-Options: DENY');header('Referrer-Policy: same-origin');header('Cache-Control: no-store');
 header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
@@ -19,4 +25,27 @@ function require_user(bool $admin=false): array {$u=user();if(!$u)json_response(
 function workspace(array $u,?int $ownerId=null): array {$s=db()->prepare('SELECT payload,revision FROM pdm_workspaces WHERE user_id=?');$s->execute([$ownerId??$u['id']]);$r=$s->fetch();return ['workspaceId'=>(int)($ownerId??$u['id']),'user'=>['id'=>(int)$u['id'],'email'=>$u['email'],'role'=>$u['role']],'data'=>json_decode($r['payload'],false,64,JSON_THROW_ON_ERROR),'revision'=>(int)$r['revision'],'csrf'=>$_SESSION['csrf']];}
 function empty_payload(string $name): string {return json_encode(['schema'=>1,'profile'=>['name'=>$name,'school'=>'','year'=>'۱۴۰۵–۱۴۰۶'],'classes'=>[],'students'=>[],'courses'=>[],'sessions'=>[],'finals'=>new stdClass()],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);}
 function password_check(mixed $password): string {if(!is_string($password)||strlen($password)<12||strlen($password)>72)throw new InvalidArgumentException('رمز باید بین ۱۲ و ۷۲ بایت باشد.');return $password;}
-function throttle(string $key,int $limit,int $seconds=900): void {$key=hash('sha256',$key);$q=db()->prepare('INSERT INTO pdm_rate_limits (rate_key,started,attempts) VALUES (?,UNIX_TIMESTAMP(),1) ON DUPLICATE KEY UPDATE attempts=IF(started<UNIX_TIMESTAMP()-?,1,attempts+1),started=IF(started<UNIX_TIMESTAMP()-?,UNIX_TIMESTAMP(),started)');$q->execute([$key,$seconds,$seconds]);$q=db()->prepare('SELECT attempts FROM pdm_rate_limits WHERE rate_key=?');$q->execute([$key]);if((int)$q->fetchColumn()>$limit)json_response(['error'=>'تعداد تلاش‌ها زیاد است؛ ۱۵ دقیقه دیگر تلاش کنید.'],429);if(random_int(1,100)===1)db()->exec('DELETE FROM pdm_rate_limits WHERE started<UNIX_TIMESTAMP()-86400');}
+function throttle(string $key,int $limit,int $seconds=900): void {
+ $key=hash('sha256',$key);
+ $db=db();
+ $db->beginTransaction();
+ try{
+  $q=$db->prepare('SELECT attempts,started FROM pdm_rate_limits WHERE rate_key=? FOR UPDATE');
+  $q->execute([$key]);
+  $row=$q->fetch();
+  $now=time();
+  if(!$row){
+   $db->prepare('INSERT INTO pdm_rate_limits (rate_key,started,attempts) VALUES (?,?,1)')->execute([$key,$now]);
+   $attempts=1;
+  }elseif((int)$row['started']<$now-$seconds){
+   $db->prepare('UPDATE pdm_rate_limits SET started=?,attempts=1 WHERE rate_key=?')->execute([$now,$key]);
+   $attempts=1;
+  }else{
+   $attempts=(int)$row['attempts']+1;
+   $db->prepare('UPDATE pdm_rate_limits SET attempts=? WHERE rate_key=?')->execute([$attempts,$key]);
+  }
+  $db->commit();
+ }catch(Throwable $e){$db->rollBack();throw $e;}
+ if($attempts>$limit)json_response(['error'=>'تعداد تلاش‌ها زیاد است؛ ۱۵ دقیقه دیگر تلاش کنید.'],429);
+ if(random_int(1,100)===1)db()->exec('DELETE FROM pdm_rate_limits WHERE started<UNIX_TIMESTAMP()-86400');
+}

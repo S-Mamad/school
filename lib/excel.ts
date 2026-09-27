@@ -23,9 +23,18 @@ export async function readExcel(file:File):Promise<{name:string;rows:string[][]}
   worker.postMessage(bytes,[bytes]);
  });
 }
+/** Neutralize Excel/CSV formula injection (=, +, -, @, tab/CR). */
+export function excelSafe(value:string|number|null|undefined):string|number|null{
+ if(value===null||value===undefined)return value===undefined?null:null;
+ if(typeof value==='number')return Number.isFinite(value)?value:null;
+ const text=String(value);
+ if(/^=|^[\+\-@\t\r]/.test(text))return "'"+text;
+ return text;
+}
 export async function exportExcel(name:string,rows:(string|number|null)[][]){
- const x=await loadExcel(),book=x.utils.book_new(),sheet=x.utils.aoa_to_sheet(rows);
- sheet['!cols']=rows[0].map(()=>({wch:24}));x.utils.book_append_sheet(book,sheet,'دفتر معلم');book.Workbook={Views:[{RTL:true}]};x.writeFile(book,name.replace(/[\\/:*?"<>|]/g,'-')+'.xlsx');
+ const safe=rows.map(row=>row.map(excelSafe));
+ const x=await loadExcel(),book=x.utils.book_new(),sheet=x.utils.aoa_to_sheet(safe);
+ sheet['!cols']=(safe[0]||[]).map(()=>({wch:24}));x.utils.book_append_sheet(book,sheet,'دفتر معلم');book.Workbook={Views:[{RTL:true}]};x.writeFile(book,name.replace(/[\\/:*?"<>|]/g,'-')+'.xlsx');
 }
 export function headerGuess(headers:string[],kind:'name'|'last'|'code'){
  return headers.findIndex(h=>{h=normalize(String(h)).replace(/[\s‌]/g,'');return kind==='code'?h==='کد'||/کددانش|شماره.*دانش|کدملی/.test(h):kind==='last'?h==='نامخانوادگی'||h==='فامیل':h==='نام'||/نامونامخانوادگی|نامکامل/.test(h)});

@@ -1,5 +1,9 @@
 DirectoryIndex index.html
 Options -Indexes
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^private(/|$) - [F,L]
+</IfModule>
 <IfModule mod_headers.c>
 Header always set X-Content-Type-Options "nosniff"
 Header always set X-Frame-Options "DENY"

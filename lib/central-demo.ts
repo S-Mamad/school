@@ -24,6 +24,8 @@ export function demoSchool():School {
  course.modules=course.modules.map((m,i)=>({...m,name:['حل مسئله و برنامه‌سازی','پیاده‌سازی الگوریتم','کار با داده‌ها','پایگاه داده','توسعه پروژه'][i],competencies:2}));
  const roster=d.enrollments.filter(e=>e.classId===course.classId).map(e=>e.studentId);
  d.sessions.push({id:'session-demo',courseId:course.id,module:0,date:today(),title:'تمرین حل مسئله',records:Object.fromEntries(roster.map((id,i)=>[id,{...blankRecord(),attendance:i===1?'absent':i===3?'late':i===5?'unset':'present',marks:i%2===0?[{id:'mark'+i,type:'کارگاهی',value:8,max:10,competency:1,note:'تمرین کلاسی'}]:[]}]))});
+ const yesterday=(()=>{const t=new Date();t.setDate(t.getDate()-1);const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(t);return ['year','month','day'].map(x=>p.find(z=>z.type===x)!.value).join('-')})();
+ d.sessions.push({id:'session-demo-2',courseId:course.id,module:0,date:yesterday,title:'مرور الگوریتم',records:Object.fromEntries(roster.map((id,i)=>[id,{...blankRecord(),attendance:i===1||i===3?'absent':i===2?'late':'present',marks:[]}]))});
  d.incidents.push({id:'case-demo',studentId:roster[3],classId:course.classId,yearId:'y1',date:today(),title:'پیگیری تأخیر',detail:'تأخیر در آغاز جلسه؛ نیازمند گفت‌وگو و پیگیری.',followup:'',status:'open',author:'سعید آذرمهر'});return d;
 }
 export function schoolData(d:School,yearId:string,teacherId:string|null):Data {
