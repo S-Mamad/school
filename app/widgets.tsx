@@ -1,0 +1,10 @@
+import {useEffect,useState,ReactNode} from 'react';
+import {FolderOpen} from 'lucide-react';
+import {toast} from 'sonner';
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
+import {fa,normalize} from '@/lib/model';
+export function Choice({value,onChange,options,label,disabled=false}:{value:string;onChange:(v:string)=>void;options:{value:string;label:string}[];label:string;disabled?:boolean}){return <Select dir="rtl" value={value||'__none'} onValueChange={v=>onChange(v==='__none'?'':v)} disabled={disabled}><SelectTrigger aria-label={label} className="choice"><SelectValue placeholder={label}/></SelectTrigger><SelectContent>{!value&&<SelectItem value="__none">{label}</SelectItem>}{options.map(o=><SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select>}
+export function Field({label,children}:{label:string;children:ReactNode}){return <label className="field"><span>{label}</span>{children}</label>}
+export function Empty({text,action}:{text:string;action?:ReactNode}){return <div className="empty"><FolderOpen size={36}/><h2>{text}</h2>{action}</div>}
+export function NumberEdit({value,onChange,max=20,step=.25,label}:{value:number|null;onChange:(v:number|null)=>void;max?:number;step?:number;label:string}){const [text,setText]=useState(value===null?'':String(value));useEffect(()=>setText(value===null?'':String(value)),[value]);return <input className="number-input" aria-label={label} inputMode="decimal" value={text} onChange={e=>setText(normalize(e.target.value).replace('٫','.'))} onBlur={()=>{if(text===''){onChange(null);return}const n=Number(text);if(!Number.isFinite(n)||n<0||n>max||Math.abs(n/step-Math.round(n/step))>0.0001){toast.error(`عدد بین صفر و ${fa(max)} با گام ${fa(step)} وارد کنید`);setText(value===null?'':String(value));return}onChange(n)}} onKeyDown={e=>{if(e.key==='Enter')e.currentTarget.blur()}}/>}
+export const attendance=[{value:'unset',label:'ثبت نشده'},{value:'present',label:'حاضر'},{value:'absent',label:'غایب'},{value:'excused',label:'غیبت موجه'},{value:'late',label:'تأخیر'}];

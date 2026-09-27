@@ -1,0 +1,6 @@
+const formatter=new Intl.DateTimeFormat('en-US-u-ca-persian',{timeZone:'UTC',year:'numeric',month:'numeric',day:'numeric'});
+export function jalaliParts(iso:string){const p=formatter.formatToParts(new Date(iso.slice(0,10)+'T12:00:00Z'));return ['year','month','day'].map(k=>Number(p.find(x=>x.type===k)!.value)) as [number,number,number]}
+export function jalali(iso:string){if(!iso)return '—';const [y,m,d]=jalaliParts(iso);return `${y}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}`.replace(/\d/g,c=>'۰۱۲۳۴۵۶۷۸۹'[Number(c)])}
+const starts=new Map<number,number>();
+export function jalaliISO(y:number,m:number,d:number){if(!Number.isInteger(y)||y<1300||y>1500||m<1||m>12||d<1||d>31)return '';let start=starts.get(y);if(start===undefined){for(let i=18;i<24;i++){const t=Date.UTC(y+621,2,i);const p=jalaliParts(new Date(t).toISOString());if(p[0]===y&&p[1]===1&&p[2]===1){start=t;starts.set(y,t);break}}}if(start===undefined)return '';const offset=(m<=7?(m-1)*31:186+(m-7)*30)+d-1;const iso=new Date(start+offset*86400000).toISOString().slice(0,10);const p=jalaliParts(iso);return p[0]===y&&p[1]===m&&p[2]===d?iso:''}
+export const persianMonths=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
