@@ -10,7 +10,7 @@
     "build": "node node_modules/vite/bin/vite.js build --config vite.host.config.ts --configLoader native",
     "preview": "node node_modules/vite/bin/vite.js preview --config vite.host.config.ts --configLoader native",
     "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.app.json",
-    "test": "node work/test-central-demo.mjs && node work/test-school-life.mjs && node work/test-central-excel.mjs"
+    "test": "node --experimental-strip-types --test tests/core.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

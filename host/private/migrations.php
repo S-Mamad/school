@@ -32,4 +32,14 @@ function migrate(PDO $db): void {
  $db->exec('CREATE TABLE IF NOT EXISTS pdm_files (id CHAR(32) PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL,task_id VARCHAR(100) NOT NULL,name VARCHAR(200) NOT NULL,size INT NOT NULL,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
  $db->exec('UPDATE pdm_schema SET version=4 WHERE id=1');
  }
+ if($version<5){
+  require_once __DIR__.'/relational.php';
+  relational_install_v5($db);
+ }
+ if($version<6){
+  $db->exec("CREATE TABLE IF NOT EXISTS pdm_sms_settings (id TINYINT PRIMARY KEY, provider VARCHAR(20) NOT NULL DEFAULT '', api_key VARCHAR(255) NOT NULL DEFAULT '', sender VARCHAR(30) NOT NULL DEFAULT '', pattern_code VARCHAR(64) NOT NULL DEFAULT '') ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $db->exec("CREATE TABLE IF NOT EXISTS pdm_sms_logs (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, actor_id VARCHAR(64) NOT NULL, session_id VARCHAR(64) NULL, student_id VARCHAR(64) NULL, recipient VARCHAR(20) NOT NULL, pattern_code VARCHAR(64) NOT NULL DEFAULT '', body TEXT NOT NULL, status VARCHAR(20) NOT NULL, provider_ref VARCHAR(80) NULL, error TEXT NULL, INDEX pdm_sms_logs_session (session_id, student_id, created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $db->exec("CREATE TABLE IF NOT EXISTS pdm_grade_audit (id BIGINT AUTO_INCREMENT PRIMARY KEY, offering_id VARCHAR(64) NOT NULL, module_index TINYINT NOT NULL, student_id VARCHAR(64) NOT NULL, actor_id VARCHAR(64) NOT NULL, action_type ENUM('session_mark','final_grade') NOT NULL, old_value JSON NULL, new_value JSON NOT NULL, ip_address VARCHAR(45) NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX pdm_grade_audit_lookup (offering_id, student_id, module_index, id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+  $db->exec('UPDATE pdm_schema SET version=6 WHERE id=1');
+ }
 }
