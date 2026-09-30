@@ -1,0 +1,222 @@
+/* —— Command composition (educlopez/ui-craft recipe-dashboard) —— */
+.hub-home{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.hub-command-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  padding:18px 20px!important;
+  border-radius:16px;
+}
+.hub-command-head h2{
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:-.025em;
+  color:var(--cd-text);
+  line-height:1.35;
+  margin:0;
+}
+.hub-command-head p{
+  margin:4px 0 0;
+  font-size:13px;
+  color:var(--cd-muted);
+  line-height:1.65;
+}
+.hub-command-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  max-width:min(100%,520px);
+  justify-content:flex-end;
+}
+.central-active .btn.ghost{
+  background:transparent;
+  border-color:transparent;
+  color:var(--cd-muted);
+  box-shadow:none;
+  min-height:38px;
+  font-weight:600;
+}
+.central-active .btn.ghost:hover{
+  background:color-mix(in srgb, var(--cd-soft) 70%, var(--cd-surface));
+  color:var(--cd-text);
+  border-color:transparent;
+}
+
+/* Metric hierarchy: one hero, rest secondary */
+.hub-dash-stats{
+  display:grid;
+  grid-template-columns:1.35fr repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:0;
+}
+.hub-dash-stats .stat{
+  min-height:96px;
+  padding:16px 16px 14px;
+  border-radius:14px;
+  box-shadow:none;
+}
+.hub-dash-stats .stat::after,
+.hub-dash-stats .stat::before{display:none!important}
+.hub-dash-stats .stat b{
+  font-size:28px;
+  font-weight:750;
+  letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+  color:var(--cd-text);
+}
+.hub-dash-stats .stat-hero{
+  background:color-mix(in srgb, var(--cd-soft) 75%, var(--cd-surface));
+  border-color:color-mix(in srgb, var(--cd-primary) 22%, var(--cd-border));
+}
+.hub-dash-stats .stat-hero b{
+  font-size:36px;
+  color:var(--cd-primary);
+}
+.hub-dash-stats .stat-note{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+  font-weight:500;
+  color:var(--cd-muted);
+}
+.hub-alert-stats{
+  grid-template-columns:1.2fr repeat(3,minmax(0,1fr));
+}
+.hub-alert-stats .severity-high{
+  background:rgba(194,65,12,.06);
+  border-color:rgba(194,65,12,.2);
+}
+.hub-alert-stats .severity-high b{font-size:34px}
+
+/* Status strip + dots (not badge spam) */
+.hub-status-strip{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  padding:14px 16px;
+  border-radius:14px;
+  border:1px solid color-mix(in srgb, #c2410c 22%, var(--cd-border));
+  background:color-mix(in srgb, #c2410c 6%, var(--cd-surface));
+}
+.hub-status-strip b{color:var(--cd-text);font-size:14px}
+.hub-status-strip p{margin:2px 0 0;font-size:13px;color:var(--cd-muted)}
+.status-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  flex-shrink:0;
+  background:var(--cd-muted);
+}
+.status-dot.high{background:#c2410c}
+.status-dot.medium{background:#ca8a04}
+.status-dot.low{background:#15803d}
+
+/* Work queue — dominant operator surface */
+.hub-queue{
+  min-height:280px;
+  display:flex;
+  flex-direction:column;
+}
+.hub-queue-head{
+  padding:16px 18px 12px;
+  border-bottom:1px solid var(--cd-border);
+  background:color-mix(in srgb, var(--cd-surface) 88%, var(--cd-bg));
+}
+.hub-queue-head h2{
+  font-size:15.5px;
+  font-weight:750;
+  letter-spacing:-.015em;
+  margin:0;
+  color:var(--cd-text);
+}
+.hub-queue-head p{
+  margin:4px 0 0;
+  font-size:13px;
+  color:var(--cd-muted);
+}
+.hub-queue-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:14px 18px;
+  margin:0;
+  text-align:right;
+  border:0;
+  border-bottom:1px solid var(--cd-border);
+  border-radius:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  cursor:pointer;
+  transition:background .14s ease-out;
+  touch-action:manipulation;
+}
+.hub-queue-row:last-child{border-bottom:0}
+.hub-queue-row:hover{
+  background:color-mix(in srgb, var(--cd-soft) 45%, var(--cd-surface));
+}
+.hub-queue-row b{
+  display:block;
+  font-size:14px;
+  font-weight:700;
+  color:var(--cd-text);
+  letter-spacing:-.01em;
+}
+.hub-queue-row small{
+  display:block;
+  margin-top:3px;
+  font-size:12.5px;
+  color:var(--cd-muted);
+  line-height:1.55;
+}
+.hub-queue-meta{
+  font-size:12.5px;
+  color:var(--cd-muted);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.hub-queue-empty{
+  padding:36px 20px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+.hub-queue-empty p{margin:0;color:var(--cd-muted)}
+
+/* Shell denser (recipe density 7) */
+.central-active .topbar{
+  min-height:56px;
+  padding-top:8px;
+  padding-bottom:8px;
+}
+.central-active .content{
+  padding-top:20px;
+  padding-bottom:40px;
+  max-width:none;
+}
+.central-active .nav-item.active{
+  background:color-mix(in srgb, var(--cd-primary) 10%, var(--cd-surface));
+}
+
+@media(max-width:900px){
+  .hub-dash-stats,
+  .hub-alert-stats{grid-template-columns:1fr 1fr}
+  .hub-dash-stats .stat-hero{grid-column:1/-1}
+}
+@media(max-width:700px){
+  .hub-command-actions{max-width:100%;justify-content:stretch}
+  .hub-command-actions .btn{flex:1 1 calc(50% - 8px)}
+  .hub-dash-stats{grid-template-columns:1fr 1fr;gap:10px}
+  .hub-dash-stats .stat-hero b{font-size:30px}
+  .hub-status-strip .btn{width:100%}
+}

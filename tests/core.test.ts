@@ -32,11 +32,17 @@ test('formula parser allows only its own tokens and stops division by zero',()=>
  assert.equal(evaluate('avg / 4',{avg:16}),4);
  assert.equal(evaluate('min(workshop, 20) + attendance / 10',{workshop:18,attendance:100}),28);
  assert.equal(evaluate('if(count > 0, avg, 0)',{count:0,avg:10}),0);
+ assert.equal(evaluate('if(count > 0, avg / 0, 3)',{count:0,avg:10}),3);
+ assert.equal(evaluate('if(count > 0, avg / 4, 10 / 0)',{count:2,avg:16}),4);
+ assert.throws(()=>evaluate('if(count > 0, avg / 0, 1)',{count:2,avg:10}),/تقسیم بر صفر/);
  assert.throws(()=>evaluate('avg / 0',{avg:10}),/تقسیم بر صفر/);
  assert.throws(()=>evaluate('10 % 0',{}),/تقسیم بر صفر/);
  assert.throws(()=>evaluate('eval(avg)',{avg:1}),/غیرمجاز|ناشناخته/);
  assert.throws(()=>evaluate('avg.workshop',{avg:1}),/غیرمجاز/);
  assert.throws(()=>evaluate('window',{}),/ناشناخته/);
+ assert.throws(()=>evaluate('constructor',{avg:1}),/ناشناخته/);
+ assert.throws(()=>evaluate('if(constructor, 1, 0)',{avg:1}),/ناشناخته/);
+ assert.throws(()=>evaluate('if(0, constructor, 1)',{avg:1}),/ناشناخته/);
 });
 
 test('SIDA headers are found in any order and blank columns are ignored',()=>{

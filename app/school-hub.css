@@ -1,3 +1,30 @@
-.jalali-input{display:flex;gap:8px;min-width:0;align-items:center;flex-wrap:wrap}.jalali-input select{min-height:44px;padding:8px;border:1px solid var(--cd-border,#dce4ef);border-radius:8px;background:var(--cd-surface,#fff);color:var(--cd-text,#26354a);font:inherit;min-width:64px;flex:1}.jalali-input select:nth-child(2){flex:1.5}.school-hub .cd-track-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hub-list-button{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;text-align:right;border-bottom:1px solid var(--cd-border);flex-wrap:wrap}.hub-notice{text-align:right;padding:20px;display:flex;flex-direction:column;gap:8px}.hub-notice.unread{border-inline-start:4px solid var(--cd-primary)}.hub-chat{display:flex;flex-direction:column;gap:14px;max-height:400px;overflow:auto;padding:10px}.hub-message{background:var(--cd-bg);padding:15px;border-radius:12px;max-width:88%;align-self:flex-start;min-width:120px;overflow-wrap:anywhere}.hub-message.out{background:var(--cd-soft);align-self:flex-end}.hub-message p,.preserve-lines{white-space:pre-wrap;overflow-wrap:anywhere}.hub-followup-row{padding:20px;border:1px solid var(--cd-border);border-radius:12px;display:flex;flex-direction:column;gap:14px}.hub-permissions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hub-permissions label,.hub-question label{display:flex;gap:10px;align-items:center;min-height:44px;padding:10px;background:var(--cd-bg);border-radius:8px}.school-hub input[type=checkbox],.school-hub input[type=radio],.hub-permissions input,.hub-question input{width:19px;height:19px;accent-color:var(--cd-primary);flex-shrink:0}.hub-question{display:flex;flex-direction:column;gap:10px;border:1px solid var(--cd-border);padding:16px;border-radius:12px}.hub-question legend{padding:0 7px;font-weight:700}.hub-bell b{background:var(--cd-soft);color:var(--cd-primary);min-width:24px;border-radius:20px;padding:2px 5px}.school-hub details summary{cursor:pointer;min-height:44px;color:var(--cd-primary)}.school-hub .stats .stat{flex-direction:column;align-items:flex-start}.central-active .topbar{height:auto;min-height:77px;gap:12px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
-.hub-alert-banner{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(180,70,50,.08),rgba(22,59,99,.06));border:1px solid rgba(180,70,50,.22)}.hub-alert-icon{width:36px;height:36px;color:#b44632;flex-shrink:0}.hub-alert-stats .severity-high b{color:#b44632}.hub-alert-stats .severity-medium b{color:#9a6b14}.hub-alert-stats .severity-low b{color:#2f6b4f}.hub-alert-card{text-align:right;display:flex;flex-direction:column;gap:8px;padding:18px 20px;border-inline-start:4px solid var(--cd-border);transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.hub-alert-card:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(22,59,99,.08)}.hub-alert-card.severity-high{border-inline-start-color:#b44632;background:rgba(180,70,50,.05)}.hub-alert-card.severity-medium{border-inline-start-color:#c4922a;background:rgba(196,146,42,.06)}.hub-alert-card.severity-low{border-inline-start-color:#3d8f68;background:rgba(61,143,104,.05)}.pill.severity-high{background:rgba(180,70,50,.14);color:#8f3424}.pill.severity-medium{background:rgba(196,146,42,.16);color:#7a5a12}.pill.severity-low{background:rgba(61,143,104,.14);color:#246348}.hub-alert-action{color:var(--cd-primary);font-size:.92rem;margin-top:4px}
-@media(max-width:700px){.school-hub .cd-track-grid,.hub-permissions{grid-template-columns:1fr}.hub-list-button>.choice{width:100%;min-width:0}.hub-followup-row{padding:12px}.hub-followup-row>.cd-row>.btn{flex:1}.hub-bell{padding:7px 9px!important}.central-active .topbar{min-height:68px}.school-hub .cd-setup{padding:16px}.school-hub .stats{grid-template-columns:1fr 1fr}.jalali-input{gap:5px}.jalali-input select{padding:6px;min-width:55px}.school-hub .school-filters{grid-template-columns:1fr}.hub-alert-banner{align-items:stretch}.hub-alert-banner .btn{width:100%}}
+.jalali-input{display:flex;gap:8px;min-width:0;align-items:center;flex-wrap:wrap}
+.jalali-input select{min-height:44px;padding:8px;border:1px solid var(--cd-border,#d0dce6);border-radius:11px;background:var(--cd-surface,#fff);color:var(--cd-text,#14233a);font:inherit;min-width:64px;flex:1}
+.jalali-input select:nth-child(2){flex:1.5}
+.school-hub .cd-track-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.hub-message p,.preserve-lines{white-space:pre-wrap;overflow-wrap:anywhere}
+.hub-permissions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hub-permissions label,.hub-question label{display:flex;gap:10px;align-items:center;min-height:44px;padding:10px 12px;background:var(--cd-bg);border-radius:11px;border:1px solid transparent}
+.hub-permissions label:hover,.hub-question label:hover{border-color:var(--cd-border)}
+.school-hub input[type=checkbox],.school-hub input[type=radio],.hub-permissions input,.hub-question input{width:18px;height:18px;accent-color:var(--cd-primary);flex-shrink:0}
+.hub-question{display:flex;flex-direction:column;gap:10px;border:1px solid var(--cd-border);padding:16px;border-radius:14px;background:var(--cd-surface)}
+.hub-question legend{padding:0 8px;font-weight:700}
+.school-hub details summary{cursor:pointer;min-height:44px;color:var(--cd-primary);font-weight:600}
+.school-hub .stats .stat{flex-direction:column;align-items:flex-start}
+.hub-priority .hub-list-button{padding-inline:4px}
+@media(max-width:700px){
+  .school-hub .cd-track-grid,.hub-permissions{grid-template-columns:1fr}
+  .hub-list-button>.choice{width:100%;min-width:0}
+  .hub-followup-row{padding:14px}
+  .hub-followup-row>.cd-row>.btn{flex:1}
+  .hub-bell{padding:7px 9px!important}
+  .central-active .topbar{min-height:60px}
+  .school-hub .cd-setup{padding:16px}
+  .school-hub .stats{grid-template-columns:1fr 1fr}
+  .jalali-input{gap:5px}
+  .jalali-input select{padding:6px;min-width:55px}
+  .school-hub .school-filters{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .hub-alert-card:hover,.central-active .course-card:hover{transform:none}
+}

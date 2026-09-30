@@ -4,24 +4,12 @@ require __DIR__.'/private/bootstrap.php';require __DIR__.'/private/central.php';
 date_default_timezone_set('Asia/Tehran');
 function central_load(bool $lock=false): array{$q=db()->query('SELECT payload,revision FROM pdm_school WHERE id=1'.($lock?' FOR UPDATE':''));$r=$q->fetch();if(!$r){$s=school_empty();$q=db()->prepare('INSERT IGNORE INTO pdm_school(id,payload) VALUES(1,?)');$q->execute([json_encode(school_wire($s),JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);return central_load($lock);}return ['state'=>relational_overlay(db(),json_decode($r['payload'],true,128,JSON_THROW_ON_ERROR)),'revision'=>(int)$r['revision']];}
 function central_response(array $u): never{$r=central_load();$actor=school_actor($u);school_require($actor!=='','این حساب هنوز به پرونده مدرسه متصل نشده است؛ مدیر باید حساب را تخصیص دهد.');json_response(['user'=>['id'=>(int)$u['id'],'actor'=>$actor,'email'=>$u['email'],'role'=>$u['role']],'revision'=>$r['revision'],'state'=>school_wire(school_visible($r['state'],$actor)),'csrf'=>$_SESSION['csrf']]);}
-function captcha_valid(string $answer): bool{$challenge=$_SESSION['school_captcha']??null;unset($_SESSION['school_captcha']);return is_array($challenge)&&time()-$challenge['time']<=180&&hash_equals($challenge['hash'],hash('sha256',strtoupper(trim($answer))));}
+function captcha_normalize(string $answer): string{$answer=strtr(trim($answer),['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9','٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9']);return strtoupper((string)preg_replace('/\s+/','',$answer));}
+function captcha_valid(string $answer): bool{$challenge=$_SESSION['school_captcha']??null;unset($_SESSION['school_captcha']);return is_array($challenge)&&time()-$challenge['time']<=180&&hash_equals($challenge['hash'],hash('sha256',captcha_normalize($answer)));}
 function central_tree(mixed $v,int $depth=0,int &$nodes=0): void{school_require(++$nodes<=80000&&$depth<=20,'اطلاعات بیش از ظرفیت است.');if(is_string($v))school_require(strlen($v)<=20000,'متن بیش از حد طولانی است.');elseif(is_array($v))foreach($v as $k=>$x){school_require(!in_array((string)$k,['__proto__','constructor','prototype'],true),'کلید داده معتبر نیست.');central_tree($x,$depth+1,$nodes);}elseif(is_float($v))school_require(is_finite($v));}
 /** Render captcha as PNG (preferred) or path-only SVG — never emit plaintext code glyphs. */
 function captcha_emit(string $code): never{
- $w=240;$h=76;
- if(function_exists('imagecreatetruecolor')){
-  $im=imagecreatetruecolor($w,$h);
-  $bg=imagecolorallocate($im,237,243,251);$fg=imagecolorallocate($im,22,59,99);$noise=imagecolorallocate($im,141,167,196);
-  imagefilledrectangle($im,0,0,$w,$h,$bg);
-  for($i=0;$i<18;$i++)imageline($im,random_int(0,$w),random_int(0,$h),random_int(0,$w),random_int(0,$h),$noise);
-  for($i=0;$i<6;$i++){
-   $x=18+$i*36+random_int(-2,2);$y=random_int(18,28);
-   imagestring($im,5,$x,$y,$code[$i],$fg);
-  }
-  for($i=0;$i<120;$i++)imagesetpixel($im,random_int(0,$w-1),random_int(0,$h-1),$noise);
-  header('Content-Type: image/png');header('Cache-Control: no-store');imagepng($im);imagedestroy($im);exit;
- }
- // Fallback: 5x7 bitmap glyphs as SVG rectangles (no <text> with the secret).
+ $w=348;$h=108;$scale=8;
  $glyphs=[
   'A'=>[0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,1,1,0,0,0,1],
   'B'=>[1,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0,1,0,0,0,1,1,0,0,0,1,1,1,1,1,0],
@@ -56,12 +44,23 @@ function captcha_emit(string $code): never{
   '8'=>[0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,0,1,1,1,0],
   '9'=>[0,1,1,1,0,1,0,0,0,1,1,0,0,0,1,0,1,1,1,1,0,0,0,0,1,0,0,0,0,1,0,1,1,1,0],
  ];
+ if(function_exists('imagecreatetruecolor')){
+  $im=imagecreatetruecolor($w,$h);
+  $bg=imagecolorallocate($im,237,243,251);$fg=imagecolorallocate($im,22,59,99);$noise=imagecolorallocate($im,213,226,242);
+  imagefilledrectangle($im,0,0,$w,$h,$bg);
+  for($i=0;$i<3;$i++)imagefilledrectangle($im,8,18+$i*28,$w-8,20+$i*28,$noise);
+  for($i=0;$i<6;$i++){
+   $g=$glyphs[$code[$i]]??$glyphs['A'];$ox=16+$i*54;$oy=24;
+   for($r=0;$r<7;$r++)for($c=0;$c<5;$c++)if($g[$r*5+$c])imagefilledrectangle($im,$ox+$c*$scale,$oy+$r*$scale,$ox+$c*$scale+$scale-2,$oy+$r*$scale+$scale-2,$fg);
+  }
+  header('Content-Type: image/png');header('Cache-Control: no-store');imagepng($im);imagedestroy($im);exit;
+ }
  header('Content-Type: image/svg+xml');header('Cache-Control: no-store');
- echo '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="76" viewBox="0 0 240 76"><rect width="240" height="76" fill="#edf3fb"/>';
- for($i=0;$i<14;$i++)echo '<path d="M '.random_int(0,240).' '.random_int(0,76).' L '.random_int(0,240).' '.random_int(0,76).'" stroke="#8da7c4" fill="none"/>';
+ echo '<svg xmlns="http://www.w3.org/2000/svg" width="'.$w.'" height="'.$h.'" viewBox="0 0 '.$w.' '.$h.'"><rect width="'.$w.'" height="'.$h.'" fill="#edf3fb"/>';
+ for($i=0;$i<3;$i++)echo '<path d="M 8 '.(18+$i*28).' H '.($w-8).'" stroke="#d5e2f2" stroke-width="2" fill="none"/>';
  for($i=0;$i<6;$i++){
-  $g=$glyphs[$code[$i]]??$glyphs['A'];$ox=16+$i*36;$oy=18+$i%2;
-  for($r=0;$r<7;$r++)for($c=0;$c<5;$c++)if($g[$r*5+$c])echo '<rect x="'.($ox+$c*4).'" y="'.($oy+$r*5).'" width="3.2" height="4.2" fill="#163b63"/>';
+  $g=$glyphs[$code[$i]]??$glyphs['A'];$ox=16+$i*54;$oy=24;
+  for($r=0;$r<7;$r++)for($c=0;$c<5;$c++)if($g[$r*5+$c])echo '<rect x="'.($ox+$c*$scale).'" y="'.($oy+$r*$scale).'" width="'.($scale-1).'" height="'.($scale-1).'" fill="#163b63"/>';
  }
  echo '</svg>';exit;
 }

@@ -1,4 +1,4 @@
-import type {School} from './central-demo';import {uid,today} from './model';
+import type {School} from './central-demo';import {fa,uid,today} from './model';import {jalali} from './jalali';
 export const permissions={structure:'تعریف رشته، پایه و کلاس',students:'مدیریت دانش‌آموزان',subjects:'برنامه درسی',teachers:'مدیریت معلمان',assign:'تخصیص تدریس',grades:'مشاهده نمرات و گزارش',office:'پیگیری غیبت و انضباط',routing:'تعیین مسئول حضور‌وغیاب',sms:'پیامک و مخاطبان',announce:'انتشار اطلاعیه',promotion:'انتقال سال تحصیلی'};
 export type Permission=keyof typeof permissions;
 export type LifeRole={id:string;name:string;permissions:Permission[]};
@@ -90,7 +90,7 @@ export function buildRiskAlerts(d:School,l:Life,yearId:string,actor:string):Risk
    else if(t.absent>=2||(t.absent>=1&&t.late>=1)||t.late>=3)severity='medium';
    else if(t.absent>=1||t.late>=2)severity='low';
    if(!severity)continue;
-   push({id:'abs:'+e.studentId,severity,kind:'attendance',studentId:e.studentId,studentName:student.name,classId:e.classId||undefined,className:className(e.classId),title:t.absent?`${t.absent} غیبت در ${windowDays} روز اخیر`:`${t.late} تأخیر در ${windowDays} روز اخیر`,detail:`بر پایه ${t.sessions} جلسه ثبت‌شده · ${t.absent} غایب · ${t.late} تأخیر`,go:canOffice?'hub-followup':'journal'});
+   push({id:'abs:'+e.studentId,severity,kind:'attendance',studentId:e.studentId,studentName:student.name,classId:e.classId||undefined,className:className(e.classId),title:t.absent?`${fa(t.absent)} غیبت در ${fa(windowDays)} روز اخیر`:`${fa(t.late)} تأخیر در ${fa(windowDays)} روز اخیر`,detail:`بر پایه ${fa(t.sessions)} جلسه ثبت‌شده · ${fa(t.absent)} غایب · ${fa(t.late)} تأخیر`,go:canOffice?'hub-followup':'journal'});
   }
  }
 
@@ -124,7 +124,7 @@ export function buildRiskAlerts(d:School,l:Life,yearId:string,actor:string):Risk
      if(total<10)weak++;
     }
     if(weak>=1){
-     push({id:`gr:${o.id}:${e.studentId}`,severity:weak>=2||(filled&&weak===filled)?'high':'medium',kind:'grade',studentId:e.studentId,studentName:student.name,classId:e.classId,className:className(e.classId),title:`نمره ضعیف در ${o.name}`,detail:`${weak} پودمان زیر ۱۰ از ۲۰ ثبت شده است`,go:isTeacher?'finals':'reports'});
+     push({id:`gr:${o.id}:${e.studentId}`,severity:weak>=2||(filled&&weak===filled)?'high':'medium',kind:'grade',studentId:e.studentId,studentName:student.name,classId:e.classId,className:className(e.classId),title:`نمره ضعیف در ${o.name}`,detail:`${fa(weak)} پودمان زیر ۱۰ از ۲۰ ثبت شده است`,go:isTeacher?'finals':'reports'});
     }
    }
   }
@@ -141,5 +141,5 @@ export function buildRiskAlerts(d:School,l:Life,yearId:string,actor:string):Risk
 
  return alerts.sort((a,b)=>severityRank[a.severity]-severityRank[b.severity]||a.studentName.localeCompare(b.studentName,'fa'));
 }
-function jalaliSafe(iso:string){try{return new Date(iso+'T12:00:00').toLocaleDateString('fa-IR')}catch{return iso}}
+function jalaliSafe(iso:string){try{return jalali(iso)}catch{return iso}}
 function totalOfSafe(f:{continuous:number|null;competency:number|null;total:number|null}){return f.total!==null?f.total:f.continuous!==null&&f.competency!==null?f.continuous+5*f.competency:null}

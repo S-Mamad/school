@@ -1,5 +1,5 @@
-const CACHE='poodman-shell-v2';
-const CORE=['./','./index.html','./offline.html','./favicon.svg','./manifest.webmanifest','./file.svg','./globe.svg','./window.svg'];
+const CACHE='poodman-shell-v3';
+const CORE=['./','./index.html','./offline.html','./favicon.svg','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-maskable-192.png','./icon-maskable-512.png','./file.svg','./globe.svg','./window.svg'];
 
 function sameOrigin(url){return url.origin===self.location.origin}
 function isApi(url){return url.pathname.endsWith('.php')||url.search.includes('school-api.php')}

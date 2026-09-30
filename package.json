@@ -7,10 +7,11 @@
   },
   "scripts": {
     "dev": "node node_modules/vite/bin/vite.js --config vite.host.config.ts --configLoader native --host 127.0.0.1",
+    "app": "node scripts/dev-app.mjs",
     "build": "node node_modules/vite/bin/vite.js build --config vite.host.config.ts --configLoader native",
     "preview": "node node_modules/vite/bin/vite.js preview --config vite.host.config.ts --configLoader native",
     "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.app.json",
-    "test": "node --experimental-strip-types --test tests/core.test.ts"
+    "test": "node --experimental-strip-types --test tests/core.test.ts tests/rules-fixes.test.mjs tests/live-flow.test.mjs tests/pwa-install.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

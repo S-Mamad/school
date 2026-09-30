@@ -12,26 +12,35 @@ export async function queueCounts(actor=offlineActor()):Promise<{pending:number;
  return {pending:pending.filter(mine).length+syncing.filter(mine).length,failed:failed.filter(mine).length};
 }
 
-async function withOutboxLock(work:()=>Promise<void>):Promise<void>{
+async function withOutboxLock(work:()=>Promise<void>):Promise<boolean>{
  if(typeof navigator!=='undefined'&&navigator.locks){
-  await navigator.locks.request('pdm-outbox',{ifAvailable:true},async lock=>{if(lock)await work()});
-  return;
+  let ran=false;
+  await navigator.locks.request('pdm-outbox',{ifAvailable:true},async lock=>{
+   if(!lock)return;
+   ran=true;
+   await work();
+  });
+  return ran;
  }
- if(flushing)return;
+ if(flushing)return false;
  await work();
+ return true;
 }
 
+export type FlushResult={ok:boolean;reason?:'offline'|'busy'|'auth'|'empty'|'partial'|'done';synced:number};
+
 /** Send pending desk writes in creation order. A dead session stops the queue instead of retrying forever. */
-export async function flushOutbox(options?:{retryFailed?:boolean}):Promise<void>{
- if(typeof navigator==='undefined'||!navigator.onLine)return;
- if(authBlocked&&!options?.retryFailed)return;
+export async function flushOutbox(options?:{retryFailed?:boolean}):Promise<FlushResult>{
+ if(typeof navigator==='undefined'||!navigator.onLine)return {ok:false,reason:'offline',synced:0};
+ if(authBlocked&&!options?.retryFailed)return {ok:false,reason:'auth',synced:0};
  if(options?.retryFailed)authBlocked=false;
  const actor=offlineActor();
- if(!actor)return;
- await withOutboxLock(async()=>{
-  if(flushing)return;
+ if(!actor)return {ok:false,reason:'empty',synced:0};
+ let synced=0;
+ let reason:FlushResult['reason']='done';
+ const ran=await withOutboxLock(async()=>{
+  if(flushing){reason='busy';return;}
   flushing=true;
-  let synced=0;
   try{
    for(const row of await getMutationsByStatus('syncing')){
     if(inflight.has(row.id))continue;
@@ -39,20 +48,32 @@ export async function flushOutbox(options?:{retryFailed?:boolean}):Promise<void>
    }
    if(options?.retryFailed)for(const row of await getMutationsByStatus('failed'))if(!row.actor||row.actor===actor)await markMutationStatus(row.id,'pending');
    const rows=(await getPendingMutations()).filter(row=>!row.actor||row.actor===actor);
+   if(!rows.length){reason='empty';return;}
    for(let index=0;index<rows.length;index++){
     const row=rows[index];
     if(inflight.has(row.id))continue;
     inflight.add(row.id);
     await markMutationStatus(row.id,'syncing');
     try{
-     await deliverDeskMutation(row.action,row.payload);
+     const value=await deliverDeskMutation(row.action,row.payload);
      await removeMutation(row.id);
      synced++;
+     if(row.action==='save_session_attendance'&&value&&typeof value==='object'){
+      const detail:{revision?:number;dispatch?:unknown}={};
+      if(typeof value.revision==='number')detail.revision=value.revision;
+      if(value.dispatch&&typeof value.dispatch==='object'){
+       const item=value.dispatch;
+       const followups=item.followups&&!Array.isArray(item.followups)?item.followups:{};
+       detail.dispatch={...item,followups};
+      }
+      if(detail.revision!=null||detail.dispatch)window.dispatchEvent(new CustomEvent('pdm-desk-ack',{detail}));
+     }
     }catch(e){
      const status=typeof e==='object'&&e&&'status' in e?Number((e as {status:number}).status):0;
      const message=e instanceof Error?e.message:'همگام‌سازی انجام نشد.';
      if(status===401||status===403){
       authBlocked=true;
+      reason='auth';
       await markMutationStatus(row.id,'failed',AUTH_MESSAGE);
       for(const rest of rows.slice(index+1))if(!inflight.has(rest.id))await markMutationStatus(rest.id,'failed',AUTH_MESSAGE);
       window.dispatchEvent(new CustomEvent('pdm-auth-expired',{detail:{message:AUTH_MESSAGE}}));
@@ -61,9 +82,11 @@ export async function flushOutbox(options?:{retryFailed?:boolean}):Promise<void>
      if(status===422||status===409){
       await markMutationStatus(row.id,'failed',message);
       console.warn('همگام‌سازی دفتر رد شد',row.id,row.action,message);
+      reason='partial';
       continue;
      }
      await markMutationStatus(row.id,'pending',message);
+     reason='partial';
      break;
     }finally{
      inflight.delete(row.id);
@@ -74,7 +97,11 @@ export async function flushOutbox(options?:{retryFailed?:boolean}):Promise<void>
    if(synced)window.dispatchEvent(new Event('pdm-synced'));
   }
  });
+ if(!ran)return {ok:false,reason:'busy',synced:0};
+ return {ok:reason==='done'||reason==='empty',reason,synced};
 }
+
+export function clearAuthBlock(){authBlocked=false}
 
 export function startSyncEngine(){
  const tick=()=>{if(navigator.onLine)void flushOutbox()};

@@ -49,5 +49,6 @@ next-env.d.ts
 /host/private/install-key.php
 /host/private/install.lock
 /host/private/uploads/
+/.local/
 *.tsbuildinfo
 *.log

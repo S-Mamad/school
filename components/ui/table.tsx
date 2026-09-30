@@ -5,12 +5,28 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
+  const ref = React.useRef<HTMLTableElement>(null)
+  React.useLayoutEffect(() => {
+    const table = ref.current
+    if (!table) return
+    const heads = [...table.querySelectorAll("[data-slot=table-head]")].map((th) =>
+      (th.textContent || "").trim()
+    )
+    table.querySelectorAll("[data-slot=table-body] [data-slot=table-row]").forEach((tr) => {
+      ;[...tr.querySelectorAll(":scope > [data-slot=table-cell]")].forEach((td, i) => {
+        const label = heads[i]
+        if (label) (td as HTMLElement).dataset.label = label
+        else delete (td as HTMLElement).dataset.label
+      })
+    })
+  })
   return (
     <div
       data-slot="table-container"
       className="relative w-full overflow-x-auto"
     >
       <table
+        ref={ref}
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}
         {...props}

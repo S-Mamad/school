@@ -11,7 +11,7 @@ function relational_ready(PDO $db): bool {
 }
 
 function relational_id(mixed $id,string $label='شناسه'): string {
- if(!is_string($id)||$id===''||strlen($id)>64)throw new InvalidArgumentException($label.' برای جدول رابطه‌ای معتبر نیست.');
+ if(!is_string($id)||$id===''||relational_chars($id)>64)throw new InvalidArgumentException($label.' برای جدول رابطه‌ای معتبر نیست.');
  return $id;
 }
 
@@ -120,7 +120,12 @@ function relational_sync_document(PDO $db,array $d): void {
  foreach($d['offerings']??[] as $o)relational_upsert_offering($db,$o,true);
  $known=[];
  foreach($db->query('SELECT id FROM pdm_sessions')->fetchAll() as $row)$known[$row['id']]=true;
- foreach($d['sessions']??[] as $s){if(!is_array($s))continue;$id=relational_id($s['id']??null,'شناسه جلسه');if(!isset($known[$id]))relational_insert_session_tree($db,$s);}
+ foreach($d['sessions']??[] as $s){
+  if(!is_array($s))continue;
+  $id=relational_id($s['id']??null,'شناسه جلسه');
+  if(!isset($known[$id]))relational_insert_session_tree($db,$s);
+  else $db->prepare('UPDATE pdm_sessions SET date=?,title=? WHERE id=?')->execute([relational_date($s['date']??null),relational_text($s['title']??'',200,'عنوان جلسه'),$id]);
+ }
  foreach($d['finals']??[] as $key=>$f){if(is_array($f))relational_upsert_final_key($db,(string)$key,$f,false);}
  foreach($d['incidents']??[] as $i)relational_upsert_incident($db,$i,true);
  $keep=[];
@@ -245,7 +250,7 @@ function relational_all_finals(PDO $db): array {
  return $out;
 }
 
-/** Keep attendance, marks and module grades on their own endpoints. Bulk save may still add a new session. */
+/** Keep attendance/marks/finals on desk endpoints. Allow title/date of existing sessions through for merge. */
 function relational_freeze_client_desk(array $server,array $client): array {
  if(!isset($client['d'],$server['d'])||!is_array($client['d'])||!is_array($server['d']))return $client;
  $serverSessions=[];
@@ -253,7 +258,12 @@ function relational_freeze_client_desk(array $server,array $client): array {
  $sessions=[];
  foreach($client['d']['sessions']??[] as $session){
   if(!is_array($session)||!isset($session['id']))continue;
-  $sessions[]=$serverSessions[$session['id']]??$session;
+  $known=$serverSessions[$session['id']]??null;
+  if($known===null){$sessions[]=$session;continue;}
+  $next=$known;
+  if(isset($session['title'])&&is_string($session['title']))$next['title']=$session['title'];
+  if(isset($session['date'])&&is_string($session['date']))$next['date']=$session['date'];
+  $sessions[]=$next;
  }
  $client['d']['sessions']=$sessions;
  $client['d']['finals']=[];
@@ -287,21 +297,29 @@ function desk_save_attendance(array $user,array $body): array {
  school_require($session!==null,'جلسه پیدا نشد.');
  $offering=relational_offering($db,$session['offering_id']);
  school_require($offering!==null,'درس جلسه پیدا نشد.');
- desk_assert_attendance($user,$offering,central_load()['state']);
+ $state=central_load()['state'];
+ desk_assert_attendance($user,$offering,$state);
+ $actor=school_actor($user);
+ $teacherOnly=$actor==='teacher:'.(string)($offering['teacher_id']??'');
  $enrolled=relational_enrolled_set($db,$offering);
  $db->beginTransaction();
  try{
-  $write=$db->prepare('INSERT INTO pdm_session_records (session_id,student_id,attendance,asked,note) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE attendance=VALUES(attendance),asked=VALUES(asked),note=VALUES(note)');
+  // Office/admin may only change attendance; asked/note stay with the teacher desk.
+  $write=$teacherOnly
+   ?$db->prepare('INSERT INTO pdm_session_records (session_id,student_id,attendance,asked,note) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE attendance=VALUES(attendance),asked=VALUES(asked),note=VALUES(note)')
+   :$db->prepare('INSERT INTO pdm_session_records (session_id,student_id,attendance,asked,note) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE attendance=VALUES(attendance)');
   foreach($rows as $row){
    school_require(is_array($row),'ردیف حضور معتبر نیست.');
    $student=relational_id($row['student_id']??null,'دانش‌آموز');
    school_require(isset($enrolled[$student]),'دانش‌آموز عضو این کلاس نیست.');
-   $write->execute([$sessionId,$student,relational_attendance($row['attendance']??''),!empty($row['asked'])?1:0,relational_note($row['note']??'')]);
+   $write->execute([$sessionId,$student,relational_attendance($row['attendance']??''),$teacherOnly&&!empty($row['asked'])?1:0,$teacherOnly?relational_note($row['note']??''):'']);
   }
-  $dispatch=relational_dispatch_if_complete($db,$sessionId);
+  $dispatch=relational_dispatch_if_complete($db,$sessionId,(int)$user['id']);
   $db->commit();
  }catch(Throwable $e){if($db->inTransaction())$db->rollBack();throw $e;}
- return ['ok'=>true,'dispatch'=>$dispatch];
+ $out=['ok'=>true,'dispatch'=>$dispatch['item']??null];
+ if(isset($dispatch['revision']))$out['revision']=$dispatch['revision'];
+ return $out;
 }
 
 function desk_save_marks(array $user,array $body): array {
@@ -381,7 +399,8 @@ function desk_save_final(array $user,array $body): array {
  return ['ok'=>true];
 }
 
-function relational_dispatch_if_complete(PDO $db,string $sessionId): mixed {
+/** @return null|array{item:array,revision:int} */
+function relational_dispatch_if_complete(PDO $db,string $sessionId,int $actorId=0): ?array {
  $session=relational_session($db,$sessionId);
  $offering=$session?relational_offering($db,$session['offering_id']):null;
  if(!$session||!$offering)return null;
@@ -415,8 +434,12 @@ function relational_dispatch_if_complete(PDO $db,string $sessionId): mixed {
  if($index===null)$life['dispatches'][]=$item;else $life['dispatches'][$index]=$item;
  school_notify($life,$to,'حضور‌وغیاب آماده پیگیری است',$item['title'],'hub-followup');
  $state['life']=$life;
+ $prevRevision=(int)$loaded['revision'];
+ // Mirror normal save: snapshot history before bumping so clients can rebase instead of hard-locking on 409.
+ $db->prepare('INSERT INTO pdm_school_history(revision,actor_id,payload) VALUES(?,?,?)')->execute([$prevRevision,$actorId,json_encode(school_wire($loaded['state']),JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);
  $db->prepare('UPDATE pdm_school SET payload=?,revision=revision+1 WHERE id=1')->execute([json_encode(school_wire($state),JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR)]);
- return $item;
+ $db->exec('DELETE FROM pdm_school_history WHERE id < (SELECT cut FROM (SELECT COALESCE(MAX(id),0)-100 AS cut FROM pdm_school_history) AS keep_history)');
+ return ['item'=>$item,'revision'=>$prevRevision+1];
 }
 
 function relational_row_status(array $rows,string $id): ?string {
