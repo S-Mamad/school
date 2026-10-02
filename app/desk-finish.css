@@ -1,0 +1,337 @@
+/* Ledger finish — one pine accent, paper sheets, the queue is the desk. */
+
+body.central-active:not([data-demo-theme="green"]):not([data-demo-theme="dark"]){
+  --cd-bg:#e7ece9;
+  --cd-surface:#fbfcfb;
+  --cd-text:#12211c;
+  --cd-muted:#3d574e;
+  --cd-border:#d0dbd5;
+  --cd-primary:#0a564e;
+  --cd-soft:#e4f3ee;
+  --cd-contrast:#f6fffc;
+  --sidebar:var(--cd-surface);
+  --sidebar-foreground:var(--cd-muted);
+  --sidebar-accent:var(--cd-soft);
+  --sidebar-border:var(--cd-border);
+  --sidebar-primary:var(--cd-primary);
+}
+
+body.central-active{
+  background:var(--cd-bg);
+  color:var(--cd-text);
+}
+
+.central-active .workspace{background:transparent}
+
+.central-active [data-slot="sidebar"],
+.central-active [data-slot="sidebar-inner"]{
+  background:var(--cd-surface)!important;
+  box-shadow:none!important;
+  border-inline-start:1px solid var(--cd-border)!important;
+}
+
+.central-active .brand{
+  padding:18px 16px 14px;
+  gap:12px;
+}
+.central-active .brand-mark{
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  background:var(--cd-primary);
+  box-shadow:none;
+}
+.central-active .brand b{
+  font-size:15px;
+  font-weight:800;
+  letter-spacing:-.02em;
+  color:var(--cd-text);
+}
+.central-active .nav-item{
+  margin:1px 10px;
+  min-height:40px;
+  padding:8px 12px;
+  border-radius:8px;
+  border:0;
+  border-inline-end:2px solid transparent;
+  color:var(--cd-muted);
+  font-weight:550;
+  background:transparent;
+}
+.central-active .nav-item:hover{
+  background:color-mix(in srgb, var(--cd-bg) 70%, var(--cd-surface));
+  color:var(--cd-text);
+}
+.central-active .nav-item.active{
+  color:var(--cd-primary);
+  background:color-mix(in srgb, var(--cd-soft) 72%, var(--cd-surface));
+  border-inline-end-color:var(--cd-primary);
+  font-weight:750;
+  box-shadow:none;
+}
+.central-active .cd-sidebar-profile{
+  background:color-mix(in srgb, var(--cd-bg) 55%, var(--cd-surface));
+  border-radius:10px;
+  box-shadow:none;
+}
+
+.central-active .topbar{
+  min-height:56px;
+  background:color-mix(in srgb, var(--cd-surface) 88%, transparent);
+  border-bottom:1px solid var(--cd-border);
+  box-shadow:none;
+}
+.central-active .desk-school b{
+  font-size:15px;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+
+.central-active .content{padding:16px 28px 56px}
+.central-active .content:has(.desk-board){
+  max-width:1280px;
+  padding-top:8px;
+}
+
+.central-active .install-offer{
+  margin:0 0 10px;
+  padding:8px 10px 8px 8px;
+  gap:10px;
+  border-radius:10px;
+  border:1px solid var(--cd-border);
+  background:transparent;
+}
+.central-active .install-offer b{
+  font-size:13.5px;
+  font-weight:650;
+  color:var(--cd-text);
+}
+.central-active .install-offer .btn.primary{
+  background:var(--cd-surface);
+  color:var(--cd-primary);
+  border-color:var(--cd-border);
+  box-shadow:none;
+  min-height:36px;
+}
+.central-active .install-offer .btn.primary:hover{
+  background:var(--cd-soft);
+}
+
+.central-active .desk-demo{
+  margin:0 0 12px!important;
+  padding:0 0 10px!important;
+  border:0!important;
+  border-bottom:1px solid var(--cd-border)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.central-active .desk-demo b{font-size:13px;font-weight:750}
+.central-active .desk-demo p{font-size:12.5px}
+
+.central-active .panel{
+  background:var(--cd-surface);
+  border:1px solid var(--cd-border);
+  border-radius:14px;
+  box-shadow:none;
+}
+
+.central-active .desk-board{
+  grid-template-columns:minmax(0,1.85fr) minmax(220px,280px);
+  gap:18px 22px;
+  align-items:start;
+}
+.central-active .desk-mast{
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  overflow:visible;
+}
+.central-active .desk-board-head,
+body[data-demo-theme="dark"] .desk-board-head{
+  background:transparent;
+  padding:0 0 14px;
+  gap:0;
+  align-items:flex-end;
+}
+.central-active .desk-hero{
+  min-width:7.2rem;
+  padding:0 22px 2px 0;
+  border-inline-end:1px solid var(--cd-border);
+  background:transparent;
+}
+.central-active .desk-hero b{
+  font-size:76px;
+  font-weight:800;
+  line-height:.82;
+  letter-spacing:-.04em;
+  font-variant-numeric:tabular-nums;
+  color:var(--cd-primary);
+}
+.central-active .desk-hero span{
+  margin-top:8px;
+  font-size:13px;
+  font-weight:700;
+  color:var(--cd-text);
+}
+.central-active .desk-board-copy{padding:4px 0 6px 22px}
+.central-active .desk-board-head h2{
+  font-size:30px;
+  font-weight:800;
+  letter-spacing:-.03em;
+  line-height:1.25;
+  text-wrap:balance;
+}
+.central-active .desk-board-head p:last-child{
+  max-width:38rem;
+  margin-top:6px;
+  font-size:14.5px;
+  line-height:1.65;
+  color:var(--cd-muted);
+}
+.central-active .desk-facts{
+  border:0;
+  border-top:1px solid var(--cd-border);
+  background:transparent;
+}
+.central-active .desk-facts>div{padding:12px 8px 2px}
+.central-active .desk-facts b{
+  font-size:20px;
+  font-weight:750;
+  font-variant-numeric:tabular-nums;
+  color:var(--cd-text);
+}
+.central-active .desk-facts span{
+  margin-top:4px;
+  font-size:12.5px;
+  color:var(--cd-muted);
+}
+
+.central-active .desk-queue{
+  border-radius:14px;
+  min-height:320px;
+  background:var(--cd-surface);
+}
+.central-active .hub-queue-head{
+  padding:16px 18px 12px;
+  background:transparent;
+  border-bottom:1px solid var(--cd-border);
+}
+.central-active .hub-queue-head h2{
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+.central-active .desk-row{
+  min-height:64px;
+  padding:11px 16px;
+  transition:background .14s ease-out;
+}
+.central-active .desk-row:hover{
+  background:color-mix(in srgb, var(--cd-soft) 55%, var(--cd-surface));
+}
+.central-active .desk-initial{
+  width:32px;
+  height:32px;
+  border-radius:8px;
+  font-weight:750;
+  background:color-mix(in srgb, var(--cd-soft) 80%, var(--cd-surface));
+}
+.central-active .desk-tag{
+  font-variant-numeric:tabular-nums;
+  font-size:12.5px;
+}
+
+.central-active .desk-rail{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  border-radius:0;
+  padding:2px 2px 0 4px;
+}
+.central-active .desk-rail section{
+  padding:0 0 16px;
+  gap:8px;
+}
+.central-active .desk-rail section+section{
+  border-top:1px solid var(--cd-border);
+  padding-top:16px;
+}
+.central-active .desk-rail h2{
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--cd-muted);
+}
+.central-active .desk-rail-num{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;
+  color:var(--cd-text);
+}
+.central-active .desk-meter{
+  height:5px;
+  background:color-mix(in srgb, var(--cd-border) 85%, var(--cd-bg));
+}
+.central-active .desk-meter>i{background:var(--cd-primary)}
+.central-active .desk-rail .btn{
+  min-height:36px;
+}
+
+.central-active .btn{
+  border-radius:9px;
+  box-shadow:none;
+}
+.central-active .btn.primary{
+  background:var(--cd-primary);
+  border-color:var(--cd-primary);
+  box-shadow:none;
+}
+.central-active .btn.primary:hover{background:color-mix(in srgb, var(--cd-primary) 88%, #000)}
+
+.central-active .page-heading h1{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:-.03em;
+  text-wrap:balance;
+}
+.central-active .stat,
+.central-active .cd-track{
+  box-shadow:none;
+  border-radius:12px;
+}
+.central-active [data-slot="table-head"]{
+  font-weight:650!important;
+  letter-spacing:0!important;
+}
+.central-active [data-slot="table-cell"],
+.central-active .desk-facts b,
+.central-active .stat b{
+  font-variant-numeric:tabular-nums;
+}
+
+@media (max-width:700px){
+  .central-active .desk-board{grid-template-columns:1fr;gap:16px}
+  .central-active .desk-board-head{
+    flex-wrap:wrap;
+    align-items:flex-start;
+    padding-bottom:12px;
+  }
+  .central-active .desk-hero{
+    border-inline-end:0;
+    padding:0 0 8px;
+    min-width:0;
+  }
+  .central-active .desk-hero b{font-size:56px}
+  .central-active .desk-board-copy{padding:0}
+  .central-active .desk-board-head h2{font-size:24px}
+  .central-active .desk-facts{grid-template-columns:1fr 1fr}
+  .central-active .content{padding-inline:14px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .central-active .desk-row,
+  .central-active .nav-item,
+  .central-active .btn{transition:none}
+}

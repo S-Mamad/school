@@ -16,6 +16,7 @@ import './school-hub.css';
 import './ui-craft.css';
 import './ui-craft-command.css';
 import './desk-shell.css';
+import './desk-finish.css';
 import {SchoolHub,hubNav,canHub} from './school-hub';
 import {InstallAppButton,InstallOffer} from './install-app';
 import {initialLife,accounts,allowed,syncAttendance,notify,type Dispatch,type Life,type Permission} from '@/lib/school-life';
